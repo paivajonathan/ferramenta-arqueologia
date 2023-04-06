@@ -1,0 +1,50 @@
+html, body {
+    height: 100vh;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#raw-image-container {
+    width: 50%;
+    height: 50%;
+    border: 1px solid #000;
+}
+
+#raw-image-container img {
+    height: 100%;
+    width: 100%;
+}
+
+#button-container {
+    margin: 1rem;
+    display: flex;
+    gap: 1rem;
+}
+
+#button-container button {
+    width: 150px;
+    height: 150px;
+    background-color: #111;
+    border-radius: 10px;
+    font-size: 20px;
+    color: white;
+}
+
+#button-container button:hover {
+    background-color: #333;
+}
+
+#button-container button:nth-child(1) {
+    background-color: red;
+}
+#button-container button:nth-child(2) {
+    background-color: green;
+}
+#button-container button:nth-child(3) {
+    background-color: blue;
+}
