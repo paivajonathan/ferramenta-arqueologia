@@ -1,0 +1,51 @@
+<%- include("./partials/header.ejs"); %>
+
+    <link rel="stylesheet" type="text/css" href="/css/vectorize-image.css" />
+
+    <div id="highlighted-image-container">
+        <img src="/highlighted/<%= highlightedImageName %>" id="highlighted-image">
+    </div>
+    <div id="buttons-container">
+        <button id="vectorize-button">Vetorizar</button>
+        <div style="display: none;" id="result-buttons-container">
+            <a href="/download-vectorized-image/<%= highlightedImageName %>">
+                <button id="download-button">Download</button>
+            </a>
+        </div>
+    </div>
+    
+    <script>
+        const vectorizeButton = document.getElementById("vectorize-button");
+
+        vectorizeButton.onclick = async function() {
+            document.getElementById("buttons-container").style.display = "none";
+
+            try {
+                const data = { 
+                    highlightedImageName: '<%= highlightedImageName %>'
+                };
+
+                const response = await fetch("/turn-image-into-vector", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const imageBlob = await response.blob();
+                const imageUrl = URL.createObjectURL(imageBlob);
+                const imgElement = document.getElementById('highlighted-image');                
+                imgElement.src = imageUrl;
+
+                document.getElementById("buttons-container").style.display = "flex";
+                document.getElementById("result-buttons-container").style.display = "flex";
+
+            } catch (error) {
+                console.log("Ocorreu um erro!\n" + error);
+            }
+        }
+    </script>
+
+
+<%- include("./partials/footer.ejs"); %>

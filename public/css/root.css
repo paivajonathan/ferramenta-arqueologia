@@ -1,0 +1,30 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat&display=swap');
+
+:root {
+    --default-border-radius: 20px;
+
+    --default-dark: #333;
+    --default-darker: #111;
+    
+    --default-font-size: 20px;
+}
+
+* {
+    margin: none;
+    border: none;
+    padding: none;
+    box-sizing: border-box;
+    font-family: 'Montserrat', Arial, Helvetica, sans-serif;
+}
+
+html, body {
+    min-height: 100vh;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--default-dark);
+}

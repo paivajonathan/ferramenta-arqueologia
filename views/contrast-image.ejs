@@ -1,0 +1,64 @@
+<%- include("./partials/header.ejs"); %>
+
+    <link rel="stylesheet" type="text/css" href="/css/contrast-image.css" />
+
+    <main>
+        <div id="raw-image-container">
+            <img src="/raw/<%= rawImageName %>" id="raw-image">
+        </div>
+        <div id="value-result-container">
+            <input type="range" min="1" max="5" step="0.01" value="0" class="slider" id="slider-bar">
+            <p>Valor do contraste: <span id="slider-value"></span></p>
+            <div style="display: none;" id="buttons-container">
+                <a href="/download-contrasted-image/<%= rawImageName %>">
+                    <button id="download-button">Download</button>
+                </a>
+                <a href="/highlight-image/<%= rawImageName %>">
+                    <button>Segmentar</button>
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const sliderBar = document.getElementById("slider-bar");
+        const sliderValue = document.getElementById("slider-value");
+        sliderValue.innerHTML = sliderBar.value;
+
+        const downloadButton = document.getElementById("download-button");
+
+        sliderBar.onchange = async function() {
+
+            document.getElementById("value-result-container").style.display = "none";
+
+            try {
+
+                const data = { 
+                    rawImageName: '<%= rawImageName %>',
+                    contrastValue: sliderBar.value
+                };
+
+                const response = await fetch('/add-contrast-to-image', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const imageBlob = await response.blob();
+                const imageUrl = URL.createObjectURL(imageBlob);
+                const imgElement = document.getElementById('raw-image');                
+                imgElement.src = imageUrl;
+                
+                document.getElementById("value-result-container").style.display = "flex";
+                document.getElementById("buttons-container").style.display = "flex";
+                sliderValue.innerHTML = this.value;
+
+            } catch (error) {
+                console.error("Ocorreu um erro!\n" + error);
+            }            
+        }
+    </script>
+
+<%- include("./partials/footer.ejs"); %>

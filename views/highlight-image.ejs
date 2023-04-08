@@ -1,33 +1,37 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Ferramenta de Arqueologia</title>
+<%- include("./partials/header.ejs"); %>
     <link rel="stylesheet" type="text/css" href="/css/highlight-image.css" />
-</head>
-<body>
-    <div id="raw-image-container">
-        <img src="/raw/<%= imageName %>" id="raw-image">
-    </div>
-    <div id="button-container">
-        <button onclick="handleButtonClick('red')">Botao 1</button>
-        <button onclick="handleButtonClick('green')">Botao 2</button>
-        <button onclick="handleButtonClick('blue')">Botao 3</button>
-    </div>
+
+    <main>
+        <div id="contrasted-image-container">
+            <img src="/contrasted/<%= contrastedImageName %>" id="contrasted-image">
+        </div>
+        <div id="mask-buttons-container">
+            <button onclick="handleButtonClick('red')">Vermelha</button>
+            <button onclick="handleButtonClick('green')">Verde</button>
+            <button onclick="handleButtonClick('blue')">Azul</button>
+        </div>
+        <div style="display: none;" id="result-buttons-container">
+            <a href="/download-highlighted-image/<%= contrastedImageName %>">
+                <button>Download</button>
+            </a>
+            <a href="/vectorize-image/<%= contrastedImageName %>">
+                <button>Vetorizar</button>
+            </a>
+        </div>
+    </main>
 
     <script>
-        const handleButtonClick = async (color) => {
+        async function handleButtonClick(color) {
+            document.getElementById("mask-buttons-container").style.display = "none";
+            document.getElementById("result-buttons-container").style.display = "none";
+
             try {
-                // Prepare data for the request
                 const data = { 
-                    imageName: '<%= imageName %>',
+                    contrastedImageName: '<%= contrastedImageName %>',
                     color: `${color}` 
                 };
 
-                // Make POST request to your backend endpoint
-                const response = await fetch('/process-image', {
+                const response = await fetch('/add-mask-to-image', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -35,25 +39,17 @@
                     body: JSON.stringify(data)
                 });
 
-                // Retrieve binary image data as Blob
                 const imageBlob = await response.blob();
-
-                // Create an object URL from the Blob
                 const imageUrl = URL.createObjectURL(imageBlob);
-
-                // Get a reference to the existing <img> element
-                const imgElement = document.getElementById('raw-image'); // Replace 'your-img-id' with the actual ID of your <img> element
-
-                // Set the image URL as the source of the <img> element
+                const imgElement = document.getElementById('contrasted-image');
                 imgElement.src = imageUrl;
 
+                document.getElementById("mask-buttons-container").style.display = "flex";
+                document.getElementById("result-buttons-container").style.display = "flex";
             } catch (error) {
-                // Handle error
-                console.error(error);
+                console.error("Ocorreu um erro!\n" + error);
             }
         }
-        
     </script>
     
-</body>
-</html>
+<%- include("./partials/footer.ejs"); %>

@@ -1,50 +1,96 @@
-html, body {
-    height: 100vh;
+main {
+    max-width: 100%;
 }
 
-body {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+#contrasted-image-container {
+    max-width: 100%;
+    width: 750px;
+    height: auto;
+    border-radius: var(--default-border-radius);
+    overflow: hidden;
 }
 
-#raw-image-container {
-    width: 50%;
-    height: 50%;
-    border: 1px solid #000;
-}
-
-#raw-image-container img {
+#contrasted-image-container img {
     height: 100%;
     width: 100%;
 }
 
-#button-container {
+#mask-buttons-container {
     margin: 1rem;
+
     display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
     gap: 1rem;
 }
 
-#button-container button {
-    width: 150px;
-    height: 150px;
-    background-color: #111;
-    border-radius: 10px;
-    font-size: 20px;
-    color: white;
+@media only screen and (max-width: 750px) {
+    #mask-buttons-container {
+        flex-direction: column;
+    }
 }
 
-#button-container button:hover {
+#mask-buttons-container button {
+    width: 100%;
+    
+    padding: 1rem 2rem;
+    border-radius: 10px;
+
+    background-color: #111;
+    color: white;
+    
+    font-size: 20px;
+
+    cursor: pointer;
+}
+
+#mask-buttons-container button:hover {
     background-color: #333;
 }
 
-#button-container button:nth-child(1) {
+#mask-buttons-container button:nth-child(1) {
     background-color: red;
 }
-#button-container button:nth-child(2) {
+
+#mask-buttons-container button:nth-child(2) {
     background-color: green;
 }
-#button-container button:nth-child(3) {
+
+#mask-buttons-container button:nth-child(3) {
     background-color: blue;
+}
+
+#result-buttons-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    padding: 0 1rem;
+}
+
+#result-buttons-container a {
+    width: 100%;
+}
+
+#result-buttons-container button {
+    width: 100%;
+
+    padding: 1rem 2rem;
+    border-radius: var(--default-border-radius);
+    
+    background-color: var(--default-darker);
+    color: white;
+    
+    font-weight: bolder;
+    font-size: var(--default-font-size);
+    
+    cursor: pointer;
+}
+
+@media only screen and (max-width: 750px) {
+    #result-buttons-container {
+        flex-direction: column;
+    }
 }

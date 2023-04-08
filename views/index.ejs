@@ -1,18 +1,19 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Ferramenta de Arqueologia</title>
+<%- include("./partials/header.ejs"); %>
     <link rel="stylesheet" type="text/css" href="/css/index.css" />
-</head>
-<body>
+
     <form action="/save-raw-image" method="POST" enctype="multipart/form-data">
-        <input type="file" name="rawImage" />
-        <button type="submit">Enviar imagem</button>
+        <label for="raw-image-input" id="label-button">Selecionar imagem</label>
+        <div style="display: none;" id="raw-image-name"></div>
+        <input style="display: none;" type="file" accept="image/png, image/jpeg" name="rawImage" id="raw-image-input" />
+        <button style="display: none;" type="submit" id="send-image">Enviar imagem</button>
     </form>
 
-    
-</body>
-</html>
+    <script>
+        document.querySelector("#raw-image-input").onchange = function(){
+            document.querySelector("#raw-image-name").textContent = this.files[0].name;
+            document.querySelector("#raw-image-name").style.display = "block";
+            document.querySelector("#send-image").style.display = "inline-block";
+        }
+    </script>
+
+<%- include("./partials/footer.ejs"); %>

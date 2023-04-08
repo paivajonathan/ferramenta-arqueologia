@@ -6,19 +6,23 @@ const { spawn } = require("child_process");
 
 const app = express();
 
+const utils = require("./utils");
+
 app.set("view engine", "ejs");
 
 app.use("/", express.static("./public"));
 app.use("/raw", express.static("./database/images/raw-images"));
+app.use("/contrasted", express.static("./database/images/contrasted-images"));
+app.use("/highlighted", express.static("./database/images/highlighted-images"));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 const rawImagesStorage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, "database/images/raw-images");
+        cb(null, "./database/images/raw-images");
     },
     filename: (req, file, cb) => {
-        cb(null, `${file.fieldname}-${Date.now()}${path.extname(file.originalname)}`);
+        cb(null, `image-${Date.now()}${path.extname(file.originalname)}`);
     }
 });
 
@@ -29,75 +33,147 @@ app.get("/", (req, res) => {
 });
 
 app.post("/save-raw-image", rawImageUpload.single("rawImage"), (req, res) => {
-    res.redirect(`/highlight-image?image=${JSON.stringify(req.file.filename)}`);
+    res.redirect(`/contrast-image/${req.file.filename}`);
 });
 
-app.get("/highlight-image", (req, res) => {
-    const imageName = JSON.parse(req.query.image);
+app.get("/contrast-image/:rawImageName", (req, res) => {
+    const rawImageName = req.params.rawImageName;
 
-    res.render("highlight-image", {
-        imageName: imageName
+    res.render("contrast-image", {
+        rawImageName: rawImageName
     });
 });
 
-function getContentType(imageName) {
-    const fileExtension = imageName.split('.').pop().toLowerCase();
-    switch (fileExtension) {
-        case 'jpg':
-        case 'jpeg':
-            return 'image/jpeg';
-        case 'png':
-            return 'image/png';
-        // Add more cases for other image types as needed
-        default:
-            return null; // Return null for unsupported image types
-    }
-}
+app.post("/add-contrast-to-image", (req, res) => {
+    const rawImageName = req.body.rawImageName;
+    const contrastValue = req.body.contrastValue;
 
-app.post('/process-image', (req, res) => {
-    // console.log(req.body.imageName)
+    const pythonProcess = spawn("python", ["./contraster.py", rawImageName, contrastValue]);
 
-    // Get the path of the image file from the request body
-    const imageName = req.body.imageName;
-    const color = req.body.color;
+    let headersSent = false;
 
-    // Spawn a new Python process and execute your script
-    const pythonProcess = spawn('python', ['./highlighter.py', imageName, color]);
-
-    let headersSent = false; // Flag to track if headers are already sent
-
-    // Listen for data events from the Python process
-    pythonProcess.stdout.on('data', (data) => {
+    pythonProcess.stdout.on("data", (data) => {
         if (!headersSent) {
-            // Set the response headers only if they are not already sent
-            // Dynamically determine the Content-Type based on the image type
-            const contentType = getContentType(imageName);
+            const contentType = utils.getContentType(rawImageName);
             if (contentType) {
-                res.setHeader('Content-Type', contentType);
+                res.setHeader("Content-Type", contentType);
             }
-            res.setHeader('Content-Encoding', 'binary');
-            headersSent = true; // Set the flag to true after setting headers
+            res.setHeader("Content-Encoding", "binary");
+            headersSent = true;
         }
 
-        // Send the binary data as the response body
         res.write(data);
     });
 
-    pythonProcess.on('close', (code) => {
-        // End the response when the Python process is closed
+    pythonProcess.stderr.on("data", (data) => {
+        console.error("Erro: " + data);
+    });
+
+    pythonProcess.on("close", () => {
         res.end();
     });
-    // // Listen for errors from the Python process (if needed)
-    // pythonProcess.stderr.on('data', (data) => {
-    //     // Handle errors from the Python process
-    // });
+});
 
-    // // Listen for the close event from the Python process
-    // pythonProcess.on('close', (code) => {
-    //     // Handle close event from the Python process
-    //     // You can send the result back to the front-end here
-    //     res.send({ result: 'Image processed successfully' });
-    // });
+app.get("/download-contrasted-image/:contrastedImageName", (req, res) => {
+    const contrastedImageName = req.params.contrastedImageName;
+    const contrastedImageExtension = path.extname(contrastedImageName);
+
+    const downloadPath = `./database/images/contrasted-images/${contrastedImageName}`;
+
+    res.download(downloadPath, `ContrastedImage${Date.now()}${contrastedImageExtension}`);
+});
+
+app.get("/highlight-image/:contrastedImageName", (req, res) => {
+    const contrastedImageName = req.params.contrastedImageName;
+
+    res.render("highlight-image", {
+        contrastedImageName: contrastedImageName
+    });
+});
+
+app.post("/add-mask-to-image", (req, res) => {
+    const contrastedImageName = req.body.contrastedImageName;
+    const color = req.body.color;
+
+    const pythonProcess = spawn("python", ["./highlighter.py", contrastedImageName, color]);
+
+    let headersSent = false;
+
+    pythonProcess.stdout.on("data", (data) => {
+        if (!headersSent) {
+            const contentType = utils.getContentType(contrastedImageName);
+            if (contentType) {
+                res.setHeader("Content-Type", contentType);
+            }
+            res.setHeader("Content-Encoding", "binary");
+            headersSent = true;
+        }
+
+        res.write(data);
+    });
+
+    pythonProcess.stderr.on("data", (data) => {
+        console.log("Erro: " + data);
+    });
+
+    pythonProcess.on("close", () => {
+        res.end();
+    });
+});
+
+app.get("/download-highlighted-image/:highlightedImageName", (req, res) => {
+    const highlightedImageName = req.params.highlightedImageName;
+    const highlightedImageExtension = path.extname(highlightedImageName);
+
+    const downloadPath = `./database/images/highlighted-images/${highlightedImageName}`;
+
+    res.download(downloadPath, `HighlightedImage${Date.now()}${highlightedImageExtension}`);
+});
+
+app.get("/vectorize-image/:highlightedImageName", (req, res) => {
+    const highlightedImageName = req.params.highlightedImageName;
+
+    res.render("vectorize-image", {
+        highlightedImageName: highlightedImageName
+    });
+});
+
+app.post("/turn-image-into-vector", (req, res) => {
+    const highlightedImageName = req.body.highlightedImageName;
+
+    const pythonProcess = spawn("python", ["./vectorizer.py", highlightedImageName]);
+
+    let headersSent = false;
+
+    pythonProcess.stdout.on("data", (data) => {
+        if (!headersSent) {
+            const contentType = utils.getContentType(highlightedImageName);
+            if (contentType) {
+                res.setHeader("Content-Type", contentType);
+            }
+            res.setHeader("Content-Encoding", "binary");
+            headersSent = true;
+        }
+
+        res.write(data);
+    });
+
+    pythonProcess.stderr.on("data", (data) => {
+        console.log("Erro: " + data);
+    });
+    
+    pythonProcess.on("close", () => {
+        res.end();
+    });
+});
+
+app.get("/download-vectorized-image/:vectorizedImageName", (req, res) => {
+    const vectorizedImageName = req.params.vectorizedImageName;
+    const vectorizedImageExtension = path.extname(vectorizedImageName);
+
+    const downloadPath = `./database/images/vectorized-images/${vectorizedImageName}`;
+
+    res.download(downloadPath, `VectorizedImage${Date.now()}${vectorizedImageExtension}`);
 });
 
 app.listen(3000, (err) => {
