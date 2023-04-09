@@ -5,6 +5,7 @@
     <div id="highlighted-image-container">
         <img src="/highlighted/<%= highlightedImageName %>" id="highlighted-image">
     </div>
+    <div style="display: none;" id="svg-container"></div>
     <div id="buttons-container">
         <button id="vectorize-button">Vetorizar</button>
         <div style="display: none;" id="result-buttons-container">
@@ -33,13 +34,20 @@
                     body: JSON.stringify(data)
                 });
 
-                const imageBlob = await response.blob();
-                const imageUrl = URL.createObjectURL(imageBlob);
-                const imgElement = document.getElementById('highlighted-image');                
-                imgElement.src = imageUrl;
+                const svgText = await response.text();
+
+                const parser = new DOMParser();
+                const svgDoc = parser.parseFromString(svgText, "image/svg+xml");
+                const svgElement = svgDoc.documentElement;
+
+                const svgContainer = document.getElementById("svg-container");
+                svgContainer.appendChild(svgElement);
 
                 document.getElementById("buttons-container").style.display = "flex";
                 document.getElementById("result-buttons-container").style.display = "flex";
+
+                document.getElementById("highlighted-image-container").style.display = "none";
+                document.getElementById("svg-container").style.display = "block";
 
             } catch (error) {
                 console.log("Ocorreu um erro!\n" + error);

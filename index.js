@@ -147,10 +147,7 @@ app.post("/turn-image-into-vector", (req, res) => {
 
     pythonProcess.stdout.on("data", (data) => {
         if (!headersSent) {
-            const contentType = utils.getContentType(highlightedImageName);
-            if (contentType) {
-                res.setHeader("Content-Type", contentType);
-            }
+            res.setHeader("Content-Type", "image/svg+xml");
             res.setHeader("Content-Encoding", "binary");
             headersSent = true;
         }
@@ -167,13 +164,12 @@ app.post("/turn-image-into-vector", (req, res) => {
     });
 });
 
-app.get("/download-vectorized-image/:vectorizedImageName", (req, res) => {
-    const vectorizedImageName = req.params.vectorizedImageName;
-    const vectorizedImageExtension = path.extname(vectorizedImageName);
+app.get("/download-vectorized-image/:vectorizedImage", (req, res) => {
+    const vectorizedImageName = path.parse(req.params.vectorizedImage).name;
 
-    const downloadPath = `./database/images/vectorized-images/${vectorizedImageName}`;
+    const downloadPath = `./database/images/vectorized-images/${vectorizedImageName}.svg`;
 
-    res.download(downloadPath, `VectorizedImage${Date.now()}${vectorizedImageExtension}`);
+    res.download(downloadPath, `VectorizedImage${Date.now()}.svg`);
 });
 
 app.listen(3000, (err) => {
