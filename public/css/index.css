@@ -10,7 +10,6 @@ form {
 #label-button, button {
     cursor: pointer;
     border-radius: var(--default-border-radius);
-    
 }
 
 #label-button {
@@ -25,6 +24,10 @@ form {
     justify-content: center;
     cursor: pointer;
     font-size: 20px;
+}
+
+#raw-image-name {
+    text-align: center;
 }
 
 button {

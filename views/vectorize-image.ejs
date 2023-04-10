@@ -12,6 +12,9 @@
             <a href="/download-vectorized-image/<%= highlightedImageName %>">
                 <button id="download-button">Download</button>
             </a>
+            <a href="/">
+                <button>Voltar para a página inicial</button>
+            </a>
         </div>
     </div>
     
@@ -41,7 +44,10 @@
                 const svgElement = svgDoc.documentElement;
 
                 const svgContainer = document.getElementById("svg-container");
+                svgContainer.innerHTML = "";
                 svgContainer.appendChild(svgElement);
+
+                document.getElementById("vectorize-button").style.display = "none";
 
                 document.getElementById("buttons-container").style.display = "flex";
                 document.getElementById("result-buttons-container").style.display = "flex";
